@@ -21,6 +21,10 @@ const applicationSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  state: {
+    type: String,
+    required: true,
+  },
   response: {
     type: String,
     required: false,
