@@ -26,7 +26,7 @@ const applicationSchema = new mongoose.Schema({
     required: true,
   },
   response: {
-    type: String,
+    type: Boolean,
     required: false,
   },
   interview: {
@@ -37,6 +37,11 @@ const applicationSchema = new mongoose.Schema({
   notes: {
     type: String,
     required: false, // Made optional for flexibility
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
 });
 
