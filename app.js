@@ -2,22 +2,32 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const mongoose = require("mongoose");
+const userRoutes = require("./routes/userRoute");
+const applicationRoutes = require("./routes/applicationRoute");
 
-const mongoConnet = async () => {
+const mongoConnect = async () => {
   try {
-    const connect = await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("MongoDB is connected");
   } catch (error) {
-    console.log(error);
+    console.error("Error connecting to MongoDB:", error);
   }
 };
 
-mongoConnet();
+mongoConnect();
+
+app.use(express.json());
+
+app.use("/api/users", userRoutes);
+app.use("/api/applications", applicationRoutes);
 
 app.get("/", (req, res) => {
   res.send("Testing");
 });
 
 app.listen(process.env.PORT, () => {
-  console.log("Server is running");
+  console.log(`Server is running on port ${process.env.PORT}`);
 });
