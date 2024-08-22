@@ -3,8 +3,8 @@ const User = require("../models/userModel");
 
 // To add a new application
 exports.createApplication = async (req, res) => {
-  const { userId, ...applicationData } = req.body; // this will extract userID from request body
-
+  console.log("Request Body:", req.body);
+  const { userId, ...applicationData } = req.body;
   try {
     const user = await User.findById(userId);
     if (!user) {
