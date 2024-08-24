@@ -1,4 +1,4 @@
-// templat for code to be add user in REPL
+// template for code to be add user in REPL
 
 async function saveUser() {
   try {
