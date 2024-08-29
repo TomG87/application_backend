@@ -1,19 +1,26 @@
+const mongoose = require("mongoose");
 const Application = require("../models/applicationModel");
 const User = require("../models/userModel");
 
 // To add a new application
 exports.createApplication = async (req, res) => {
   console.log("Request Body:", req.body);
-  const { userId, ...applicationData } = req.body;
+  const { user, ...applicationData } = req.body;
+
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    return res.status(400).json({ message: "Invalid user ID format" });
+  }
+
   try {
-    const user = await User.findById(userId);
-    if (!user) {
+    const foundUser = await User.findById(user);
+    if (!foundUser) {
       return res.status(400).json({ message: "Invalid user ID" });
     }
 
     const newApplication = new Application({
       ...applicationData,
-      user: userId,
+      user,
     });
     const savedApplication = await newApplication.save();
     res.status(201).json(savedApplication);
@@ -39,7 +46,7 @@ exports.updateApplication = async (req, res) => {
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    ).populate("user"); // Optionally populate user details
+    ).populate("user");
 
     if (!updatedApplication) {
       return res.status(404).json({ message: "Application not found" });
@@ -51,7 +58,7 @@ exports.updateApplication = async (req, res) => {
   }
 };
 
-//To remove an application by ID
+// To remove an application by ID
 exports.deleteApplication = async (req, res) => {
   try {
     const deletedApplication = await Application.findByIdAndDelete(
