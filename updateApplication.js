@@ -30,4 +30,4 @@ updateApplication("66cd1b0cbe42fe564c156ee7", {
   notes: "Updated notes",
 });
 
-// to update properties on an application object ID
+// to update properties on an application object ID, submit all data together
