@@ -49,3 +49,15 @@ exports.uploadDocument = [
     }
   },
 ];
+
+exports.deleteDocument = async (req, res) => {
+  try {
+    const document = await Document.findByIdAndDelete(req.params.id);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+    res.json({ message: "Document deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
