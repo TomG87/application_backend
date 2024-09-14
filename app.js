@@ -4,6 +4,13 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoute");
 const applicationRoutes = require("./routes/applicationRoute");
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+  })
+);
 
 const mongoConnect = async () => {
   try {
