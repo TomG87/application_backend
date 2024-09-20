@@ -22,6 +22,7 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+  console.log("Login Request Body:", req.body);
   const { email, password } = req.body;
 
   try {
@@ -29,10 +30,12 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
+
     const token = jwt.sign({ id: user._id }, "your_jwt_secret", {
       expiresIn: "1 hour",
     });
