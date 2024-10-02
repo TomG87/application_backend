@@ -36,7 +36,7 @@ const applicationSchema = new mongoose.Schema({
   },
   notes: {
     type: String,
-    required: false, // Made optional for flexibility
+    required: false,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
