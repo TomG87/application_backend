@@ -1,53 +1,100 @@
-const mongoose = require("mongoose");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const Application = require("../models/applicationModel");
 const User = require("../models/userModel");
+const Document = require("../models/documentModel");
 
-// To add a new application
-exports.createApplication = async (req, res) => {
-  try {
-    const interview = JSON.parse(req.body.interview);
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-    if (
-      !req.body.date ||
-      !req.body.companyName ||
-      !req.body.source ||
-      !req.body.applicationLink ||
-      !req.body.user
-    ) {
-      return res.status(400).json({ message: "Missing required fields." });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Only PDF and Word documents are allowed"), false);
     }
+    cb(null, true);
+  },
+});
 
-    if (interview.date && isNaN(new Date(interview.date))) {
-      return res.status(400).json({ message: "Invalid interview date." });
+// To add a new application with a document attachment
+exports.createApplication = [
+  (req, res, next) => {
+    upload.single("document")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+      } else if (err) {
+        return res.status(500).json({ message: err.message });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      const interview = JSON.parse(req.body.interview);
+
+      const newApplication = new Application({
+        date: req.body.date,
+        companyName: req.body.companyName,
+        source: req.body.source,
+        applicationLink: req.body.applicationLink,
+        remote: req.body.remote === "true",
+        state: req.body.state,
+        response: req.body.response === "true",
+        interview: {
+          date: interview.date || null,
+          time: interview.time || null,
+          location: interview.location || "",
+        },
+        notes: req.body.notes || null,
+        user: req.body.user,
+      });
+
+      await newApplication.save();
+
+      // If a document was uploaded, create a new Document entry
+      let savedDocument = null;
+      if (req.file) {
+        const newDocument = new Document({
+          fileName: req.file.filename,
+          fileType: req.file.mimetype,
+          fileSize: req.file.size,
+          filePath: req.file.path,
+          user: req.body.user,
+          application: newApplication._id,
+        });
+        savedDocument = await newDocument.save();
+      }
+
+      res.status(201).json({
+        application: newApplication,
+        document: savedDocument,
+      });
+    } catch (err) {
+      res.status(400).json({
+        message: "Failed to create application",
+        errors: err.errors || err.message,
+      });
     }
-
-    const newApplication = new Application({
-      date: req.body.date,
-      companyName: req.body.companyName,
-      source: req.body.source,
-      applicationLink: req.body.applicationLink,
-      remote: req.body.remote === "true",
-      state: req.body.state,
-      response: req.body.response === "true",
-      interview: {
-        date: interview.date || null,
-        time: interview.time || null,
-        location: interview.location || "",
-      },
-      notes: req.body.notes || null,
-      user: req.body.user,
-    });
-
-    await newApplication.save();
-    res.status(201).json(newApplication);
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({
-      message: "Failed to create application",
-      errors: err.errors || err.message,
-    });
-  }
-};
+  },
+];
 
 // To get all applications
 exports.getApplications = async (req, res) => {
