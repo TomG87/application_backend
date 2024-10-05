@@ -99,15 +99,37 @@ exports.createApplication = [
 // To get all applications
 exports.getApplications = async (req, res) => {
   try {
-    const userId = req.user.id; 
-    const applications = await Application.find({ user: userId }).populate("user");
+    const userId = req.user.id;
+    const applications = await Application.find({ user: userId }).populate(
+      "user"
+    );
     res.json(applications);
   } catch (err) {
     console.error(err);
     const errors = err.errors
       ? Object.values(err.errors).map((e) => e.message)
       : [err.message];
-    res.status(400).json({ message: "Failed to retrieve applications", errors });
+    res
+      .status(400)
+      .json({ message: "Failed to retrieve applications", errors });
+  }
+};
+// To get all applications for a specific user
+exports.getUserApplications = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming req.user is set by your authentication middleware
+    const applications = await Application.find({ user: userId }).populate(
+      "user"
+    );
+    res.json(applications);
+  } catch (err) {
+    console.error(err);
+    const errors = err.errors
+      ? Object.values(err.errors).map((e) => e.message)
+      : [err.message];
+    res
+      .status(400)
+      .json({ message: "Failed to retrieve applications", errors });
   }
 };
 
