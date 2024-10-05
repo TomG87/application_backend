@@ -99,14 +99,15 @@ exports.createApplication = [
 // To get all applications
 exports.getApplications = async (req, res) => {
   try {
-    const applications = await Application.find().populate("user");
+    const userId = req.user.id; 
+    const applications = await Application.find({ user: userId }).populate("user");
     res.json(applications);
   } catch (err) {
     console.error(err);
     const errors = err.errors
       ? Object.values(err.errors).map((e) => e.message)
       : [err.message];
-    res.status(400).json({ message: "Failed to create application", errors });
+    res.status(400).json({ message: "Failed to retrieve applications", errors });
   }
 };
 
