@@ -1,16 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const applicationController = require("../controllers/applicationController");
-const { authenticateUser } = require("../middleware/auth");
 
-router.post("/create", applicationController.createApplication);
-router.get("/get", applicationController.getApplications);
-router.put("/update/:id", applicationController.updateApplication);
-router.delete("/delete/:id", applicationController.deleteApplication);
-router.get(
-  "/user-applications",
-  authenticateUser,
-  applicationController.getUserApplications
-);
+router.post("/", applicationController.createApplication); // Assuming this is correct
+router.get("/", applicationController.getApplications);
+router.get("/:id", applicationController.getUserApplications);
+router.put("/:id", applicationController.updateApplication);
+router.delete("/:id", applicationController.deleteApplication);
 
 module.exports = router;

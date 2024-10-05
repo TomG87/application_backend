@@ -35,7 +35,7 @@ const upload = multer({
 });
 
 // To add a new application with a document attachment
-exports.createApplication = [
+const createApplication = [
   (req, res, next) => {
     upload.single("document")(req, res, (err) => {
       if (err instanceof multer.MulterError) {
@@ -97,7 +97,7 @@ exports.createApplication = [
 ];
 
 // To get all applications
-exports.getApplications = async (req, res) => {
+const getApplications = async (req, res) => {
   try {
     const userId = req.user.id;
     const applications = await Application.find({ user: userId }).populate(
@@ -114,8 +114,9 @@ exports.getApplications = async (req, res) => {
       .json({ message: "Failed to retrieve applications", errors });
   }
 };
+
 // To get all applications for a specific user
-exports.getUserApplications = async (req, res) => {
+const getUserApplications = async (req, res) => {
   try {
     const userId = req.user.id; // Assuming req.user is set by your authentication middleware
     const applications = await Application.find({ user: userId }).populate(
@@ -134,7 +135,7 @@ exports.getUserApplications = async (req, res) => {
 };
 
 // Lookup single application by ID
-exports.updateApplication = async (req, res) => {
+const updateApplication = async (req, res) => {
   try {
     const updatedApplication = await Application.findByIdAndUpdate(
       req.params.id,
@@ -153,7 +154,7 @@ exports.updateApplication = async (req, res) => {
 };
 
 // To remove an application by ID
-exports.deleteApplication = async (req, res) => {
+const deleteApplication = async (req, res) => {
   try {
     const deletedApplication = await Application.findByIdAndDelete(
       req.params.id
@@ -167,4 +168,12 @@ exports.deleteApplication = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+module.exports = {
+  createApplication,
+  getApplications,
+  getUserApplications,
+  updateApplication,
+  deleteApplication,
 };
