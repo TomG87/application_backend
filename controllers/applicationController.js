@@ -100,6 +100,9 @@ const createApplication = [
 const getApplications = async (req, res) => {
   try {
     const userId = req.user.id;
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
     const applications = await Application.find({ user: userId }).populate(
       "user"
     );
@@ -118,7 +121,7 @@ const getApplications = async (req, res) => {
 // To get all applications for a specific user
 const getUserApplications = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming req.user is set by your authentication middleware
+    const userId = req.user.id; //
     const applications = await Application.find({ user: userId }).populate(
       "user"
     );
@@ -133,7 +136,6 @@ const getUserApplications = async (req, res) => {
       .json({ message: "Failed to retrieve applications", errors });
   }
 };
-
 // Lookup single application by ID
 const updateApplication = async (req, res) => {
   try {

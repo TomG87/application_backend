@@ -26,7 +26,7 @@ mongoConnect();
 app.use(express.json());
 
 app.use("/api/users", userRoutes);
-app.use("/api/applications", applicationRoutes);
+app.use("/api/applications", applicationRoutes); // Use application routes here
 
 app.get("/", (req, res) => {
   res.send("Testing");
