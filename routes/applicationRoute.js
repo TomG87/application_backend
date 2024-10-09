@@ -15,7 +15,7 @@ router.get("/user-applications/:userId", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
+router.post("/create", applicationController.createApplication);
 router.put("/:id", applicationController.updateApplication);
 router.delete("/:id", applicationController.deleteApplication);
 
