@@ -3,10 +3,7 @@ const router = express.Router();
 const applicationController = require("../controllers/applicationController");
 const Application = require("../models/applicationModel");
 
-router.post("/", applicationController.createApplication);
-router.get("/", applicationController.getApplications);
-
-// Get applications by user ID
+// Get all applications for a specific user by user ID
 router.get("/user-applications/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -17,32 +14,16 @@ router.get("/user-applications/:userId", async (req, res) => {
   }
 });
 
-// Update application by ID
-router.put("/:id", async (req, res) => {
-  try {
-    console.log("Update request body:", req.body);
-    const application = await Application.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+// Create a new application
+router.post("/", applicationController.createApplication);
 
-    if (!application) {
-      return res.status(404).send("Application not found");
-    }
+// Get all applications
+router.get("/", applicationController.getApplications);
 
-    res.json(application); // Send the updated application back in response
-  } catch (error) {
-    console.error("Error updating application:", error);
-    res.status(500).send("Server error");
-  }
-});
+// Update an application by ID
+router.put("/:id", applicationController.updateApplication);
 
-// Additional routes
-router.post("/create", applicationController.createApplication);
+// Delete an application by ID
 router.delete("/:id", applicationController.deleteApplication);
 
 module.exports = router;

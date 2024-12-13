@@ -45,6 +45,22 @@ const applicationSchema = new mongoose.Schema({
   },
 });
 
+applicationSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    ret.date = ret.date
+      ? ret.date.toLocaleDateString("en-US", options)
+      : ret.date;
+    if (ret.interview && ret.interview.date) {
+      ret.interview.date = ret.interview.date.toLocaleDateString(
+        "en-US",
+        options
+      );
+    }
+    return ret;
+  },
+});
+
 const Application = mongoose.model("Application", applicationSchema);
 
 module.exports = Application;

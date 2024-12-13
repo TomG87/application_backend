@@ -67,7 +67,7 @@ const createApplication = [
         user: req.body.user,
       });
 
-      await newApplication.save();
+      const savedApplication = await newApplication.save();
 
       // If a document was uploaded, create a new Document entry
       let savedDocument = null;
@@ -78,13 +78,13 @@ const createApplication = [
           fileSize: req.file.size,
           filePath: req.file.path,
           user: req.body.user,
-          application: newApplication._id,
+          application: savedApplication._id,
         });
         savedDocument = await newDocument.save();
       }
 
       res.status(201).json({
-        application: newApplication,
+        application: savedApplication,
         document: savedDocument,
       });
     } catch (err) {
@@ -121,7 +121,7 @@ const getApplications = async (req, res) => {
 // To get all applications for a specific user
 const getUserApplications = async (req, res) => {
   try {
-    const userId = req.user.id; //
+    const userId = req.user.id;
     const applications = await Application.find({ user: userId }).populate(
       "user"
     );
@@ -136,24 +136,64 @@ const getUserApplications = async (req, res) => {
       .json({ message: "Failed to retrieve applications", errors });
   }
 };
-// Lookup single application by ID
-const updateApplication = async (req, res) => {
-  try {
-    const updatedApplication = await Application.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).populate("user");
 
-    if (!updatedApplication) {
-      return res.status(404).json({ message: "Application not found" });
+// Lookup single application by ID and update
+const updateApplication = [
+  (req, res, next) => {
+    upload.single("document")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+      } else if (err) {
+        return res.status(500).json({ message: err.message });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    console.log("Update request body:", req.body); // Log the request body
+    try {
+      const existingApplication = await Application.findById(req.params.id);
+      if (!existingApplication) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      existingApplication.date = req.body.date || existingApplication.date;
+      existingApplication.companyName =
+        req.body.companyName || existingApplication.companyName;
+      existingApplication.source =
+        req.body.source || existingApplication.source;
+      existingApplication.applicationLink =
+        req.body.applicationLink || existingApplication.applicationLink;
+      existingApplication.remote =
+        req.body.remote === "true" || existingApplication.remote;
+      existingApplication.state = req.body.state || existingApplication.state;
+      existingApplication.response =
+        req.body.response === "true" || existingApplication.response;
+      existingApplication.notes = req.body.notes || existingApplication.notes;
+
+      if (req.body.interview) {
+        const interview = JSON.parse(req.body.interview);
+        existingApplication.interview.date =
+          interview.date || existingApplication.interview.date;
+        existingApplication.interview.time =
+          interview.time || existingApplication.interview.time;
+        existingApplication.interview.location =
+          interview.location || existingApplication.interview.location;
+      }
+
+      if (req.file) {
+        existingApplication.document = req.file.path;
+      }
+
+      const updatedApplication = await existingApplication.save();
+
+      res.status(200).json(updatedApplication);
+    } catch (err) {
+      console.error("Error during update:", err);
+      res.status(400).json({ message: err.message });
     }
-
-    res.json(updatedApplication);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
+  },
+];
 
 // To remove an application by ID
 const deleteApplication = async (req, res) => {
@@ -168,6 +208,7 @@ const deleteApplication = async (req, res) => {
 
     res.json({ message: "Application deleted successfully" });
   } catch (err) {
+    console.error("Error deleting application:", err);
     res.status(500).json({ message: err.message });
   }
 };
